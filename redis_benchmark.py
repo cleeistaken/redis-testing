@@ -302,7 +302,7 @@ class RedisMemtierBenchmark:
             json.dump({
                 'config': self.config,
                 'results': self.results,
-                'summary': self.generate_summary()
+                'summary': generate_summary(self.results)
             }, f, indent=2)
         
         self.logger.info(f"Results saved to {results_file}")
