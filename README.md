@@ -101,6 +101,18 @@ python redis_benchmark.py \
   --wait-between-iterations 30
 ```
 
+### Request-Based Benchmark
+
+Use request count instead of time duration:
+
+```bash
+python redis_benchmark.py \
+  --data-sizes 64 256 1024 \
+  --ratios 1:1 1:10 10:1 \
+  --benchmark-requests 50000 \
+  --benchmark-clients 50
+```
+
 ## Command-Line Options
 
 ### Redis Connection
@@ -132,10 +144,12 @@ python redis_benchmark.py \
 |--------|---------|-------------|
 | `--benchmark-clients` | 50 | Number of concurrent clients |
 | `--benchmark-threads` | 4 | Number of threads |
-| `--benchmark-requests` | 10000 | Requests per client |
-| `--test-time` | 60 | Test duration in seconds |
+| `--benchmark-requests` | None | Requests per client (mutually exclusive with --test-time) |
+| `--test-time` | 60 | Test duration in seconds (mutually exclusive with --benchmark-requests) |
 | `--pipeline` | 1 | Pipeline depth |
 | `--key-pattern` | R:R | Key pattern (R:R = random) |
+
+**Note**: `--test-time` and `--benchmark-requests` are mutually exclusive. Use `--test-time` for time-based tests (default) or `--benchmark-requests` for request-count-based tests.
 
 ### Timing Settings
 

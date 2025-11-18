@@ -79,13 +79,17 @@ class RedisMemtierBenchmark:
             '--protocol', self.config.get('protocol', 'redis'),
             '--clients', str(self.config.get('benchmark_clients', 50)),
             '--threads', str(self.config.get('benchmark_threads', 4)),
-            '--requests', str(self.config.get('benchmark_requests', 10000)),
             '--data-size', str(data_size),
             '--key-pattern', self.config.get('key_pattern', 'R:R'),
             '--ratio', ratio,
             '--pipeline', str(self.config.get('pipeline', 1)),
-            '--test-time', str(self.config.get('test_time', 60)),
         ]
+        
+        # Add either --test-time or --requests (mutually exclusive)
+        if self.config.get('test_time'):
+            cmd.extend(['--test-time', str(self.config['test_time'])])
+        else:
+            cmd.extend(['--requests', str(self.config.get('benchmark_requests', 10000))])
         
         # Add authentication if provided
         if self.config.get('redis_password'):
@@ -454,10 +458,13 @@ Examples:
                         help='Number of clients for benchmark (default: 50)')
     parser.add_argument('--benchmark-threads', type=int, default=4,
                         help='Number of threads for benchmark (default: 4)')
-    parser.add_argument('--benchmark-requests', type=int, default=10000,
-                        help='Number of requests per client for benchmark (default: 10000)')
-    parser.add_argument('--test-time', type=int, default=60,
-                        help='Test duration in seconds (default: 60)')
+    
+    # Mutually exclusive group for test duration
+    duration_group = parser.add_mutually_exclusive_group()
+    duration_group.add_argument('--benchmark-requests', type=int,
+                        help='Number of requests per client for benchmark (mutually exclusive with --test-time)')
+    duration_group.add_argument('--test-time', type=int, default=60,
+                        help='Test duration in seconds (default: 60, mutually exclusive with --benchmark-requests)')
     
     parser.add_argument('--pipeline', type=int, default=1,
                         help='Pipeline depth (default: 1)')
@@ -492,8 +499,8 @@ Examples:
         'populate_requests': args.populate_requests,
         'benchmark_clients': args.benchmark_clients,
         'benchmark_threads': args.benchmark_threads,
-        'benchmark_requests': args.benchmark_requests,
-        'test_time': args.test_time,
+        'benchmark_requests': args.benchmark_requests,  # May be None
+        'test_time': args.test_time,  # May be None if benchmark_requests is set
         'pipeline': args.pipeline,
         'key_pattern': args.key_pattern,
         'wait_between_operations': args.wait_between_operations,
