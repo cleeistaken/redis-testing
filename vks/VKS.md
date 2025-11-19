@@ -12,7 +12,7 @@ kubectl apply -f bundle.yaml
 
 #
 kubectl apply -f rec.yaml
-kubectl get r ec --watch
+kubectl get rec --watch
 kubectl apply -f redb1.yaml
 kubectl get redb --watch
 
