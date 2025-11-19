@@ -11,14 +11,14 @@ if [ ! -d "results" ]; then
     exit 1
 fi
 
-# Count results
-result_count=$(ls results/*.json 2>/dev/null | wc -l)
+# Count run directories
+result_count=$(find results -maxdepth 1 -type d -name "[0-9]*" 2>/dev/null | wc -l)
 if [ $result_count -eq 0 ]; then
     echo "No results found. Run a benchmark first!"
     exit 1
 fi
 
-echo "Found $result_count benchmark result(s)"
+echo "Found $result_count benchmark run(s)"
 echo ""
 
 # Show menu
@@ -26,7 +26,7 @@ echo "What would you like to view?"
 echo "1) Latest results summary (JSON)"
 echo "2) Latest log file"
 echo "3) List all results"
-echo "4) Open graphs folder"
+echo "4) Open latest graphs folder"
 echo "5) Show latest results as table"
 echo ""
 read -p "Enter choice (1-5): " choice
@@ -36,16 +36,22 @@ case $choice in
         echo ""
         echo "Latest Results:"
         echo "==============="
-        latest=$(ls -t results/*.json | head -1)
-        echo "File: $latest"
-        echo ""
-        cat "$latest" | python3 -m json.tool | less
+        latest_dir=$(ls -td results/[0-9]* 2>/dev/null | head -1)
+        latest="$latest_dir/benchmark_results.json"
+        if [ -f "$latest" ]; then
+            echo "File: $latest"
+            echo ""
+            cat "$latest" | python3 -m json.tool | less
+        else
+            echo "No results file found"
+        fi
         ;;
     2)
         echo ""
         echo "Latest Log:"
         echo "==========="
-        latest_log=$(ls -t logs/*.log 2>/dev/null | head -1)
+        latest_dir=$(ls -td results/[0-9]* 2>/dev/null | head -1)
+        latest_log=$(find "$latest_dir/logs" -name "*.log" 2>/dev/null | head -1)
         if [ -z "$latest_log" ]; then
             echo "No logs found"
         else
@@ -58,18 +64,20 @@ case $choice in
         echo ""
         echo "All Results:"
         echo "============"
-        ls -lht results/*.json
+        ls -lhtd results/[0-9]* 2>/dev/null
         ;;
     4)
         echo ""
-        if [ -d "results/graphs" ]; then
-            echo "Opening graphs folder..."
+        latest_dir=$(ls -td results/[0-9]* 2>/dev/null | head -1)
+        graphs_dir="$latest_dir/graphs"
+        if [ -d "$graphs_dir" ]; then
+            echo "Opening graphs folder: $graphs_dir"
             if [[ "$OSTYPE" == "darwin"* ]]; then
-                open results/graphs/
+                open "$graphs_dir"
             elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-                xdg-open results/graphs/ 2>/dev/null || echo "Please open: results/graphs/"
+                xdg-open "$graphs_dir" 2>/dev/null || echo "Please open: $graphs_dir"
             else
-                echo "Please open: results/graphs/"
+                echo "Please open: $graphs_dir"
             fi
         else
             echo "No graphs found. Make sure visualizations were generated."
@@ -79,10 +87,18 @@ case $choice in
         echo ""
         echo "Latest Results Summary:"
         echo "======================="
-        latest=$(ls -t results/*.json | head -1)
+        latest_dir=$(ls -td results/[0-9]* 2>/dev/null | head -1)
+        latest="$latest_dir/benchmark_results.json"
+        
+        if [ ! -f "$latest" ]; then
+            echo "No results file found"
+            exit 1
+        fi
+        
         echo "File: $latest"
         echo ""
-        python3 << 'EOF'
+        
+        python3 - "$latest" << 'EOF'
 import json
 import sys
 
@@ -93,7 +109,12 @@ try:
     print("\nConfiguration:")
     print(f"  Data Sizes: {data['config']['data_sizes']}")
     print(f"  Ratios: {data['config']['ratios']}")
-    print(f"  Test Time: {data['config']['test_time']}s")
+    
+    # Handle both test_time and benchmark_requests
+    if data['config'].get('test_time'):
+        print(f"  Test Time: {data['config']['test_time']}s")
+    elif data['config'].get('benchmark_requests'):
+        print(f"  Benchmark Requests: {data['config']['benchmark_requests']}")
     
     print("\nSummary:")
     summary = data['summary']
@@ -116,8 +137,9 @@ try:
     
 except Exception as e:
     print(f"Error reading results: {e}")
+    import traceback
+    traceback.print_exc()
 EOF
-python3 -c "import sys; exec(open('/dev/stdin').read())" "$latest"
         ;;
     *)
         echo "Invalid choice"

@@ -340,8 +340,12 @@ def generate_visualizations(results: List[Dict[str, Any]], summary: Dict[str, An
     # Setup
     setup_plot_style()
     
-    # Create output directory
-    output_dir = Path(config.get('results_dir', 'results')) / 'graphs'
+    # Use graphs_dir from config if provided, otherwise use default
+    if 'graphs_dir' in config:
+        output_dir = Path(config['graphs_dir'])
+    else:
+        output_dir = Path(config.get('results_dir', 'results')) / 'graphs'
+    
     output_dir.mkdir(parents=True, exist_ok=True)
     
     # Prepare data

@@ -24,15 +24,24 @@ class RedisMemtierBenchmark:
     def __init__(self, config: Dict[str, Any]):
         self.config = config
         self.results = []
+        
+        # Create timestamped run directory
+        self.run_timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        self.run_dir = Path(self.config.get('results_dir', 'results')) / self.run_timestamp
+        self.run_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Update config to use run-specific directories
+        self.log_dir = self.run_dir / 'logs'
+        self.log_dir.mkdir(exist_ok=True)
+        
+        self.graphs_dir = self.run_dir / 'graphs'
+        self.graphs_dir.mkdir(exist_ok=True)
+        
         self.setup_logging()
         
     def setup_logging(self):
         """Configure logging for the benchmark"""
-        log_dir = Path(self.config.get('log_dir', 'logs'))
-        log_dir.mkdir(exist_ok=True)
-        
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        log_file = log_dir / f'benchmark_{timestamp}.log'
+        log_file = self.log_dir / f'benchmark_{self.run_timestamp}.log'
         
         logging.basicConfig(
             level=logging.INFO,
@@ -43,6 +52,7 @@ class RedisMemtierBenchmark:
             ]
         )
         self.logger = logging.getLogger(__name__)
+        self.logger.info(f"Benchmark run directory: {self.run_dir}")
         self.logger.info(f"Benchmark started with config: {json.dumps(self.config, indent=2)}")
         
     def build_populate_command(self, data_size: int) -> List[str]:
@@ -292,14 +302,11 @@ class RedisMemtierBenchmark:
     
     def save_results(self):
         """Save results to JSON file"""
-        results_dir = Path(self.config.get('results_dir', 'results'))
-        results_dir.mkdir(exist_ok=True)
-        
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        results_file = results_dir / f'benchmark_results_{timestamp}.json'
+        results_file = self.run_dir / f'benchmark_results.json'
         
         with open(results_file, 'w') as f:
             json.dump({
+                'run_timestamp': self.run_timestamp,
                 'config': self.config,
                 'results': self.results,
                 'summary': generate_summary(self.results)
@@ -527,13 +534,17 @@ Examples:
     if not args.no_visualize:
         try:
             from visualize import generate_visualizations
-            generate_visualizations(results, summary, config)
+            # Pass the graphs directory to the visualization function
+            viz_config = config.copy()
+            viz_config['graphs_dir'] = str(benchmark.graphs_dir)
+            generate_visualizations(results, summary, viz_config)
         except ImportError:
             logging.warning("Visualization module not available. Install matplotlib and seaborn to enable visualizations.")
         except Exception as e:
             logging.error(f"Failed to generate visualizations: {str(e)}")
     
     print(f"\nResults saved to: {results_file}")
+    print(f"Run directory: {benchmark.run_dir}")
     print("Benchmark completed successfully!")
 
 

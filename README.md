@@ -183,41 +183,50 @@ The `--ratios` parameter specifies the SET:GET ratio:
 
 ### Directory Structure
 
+Each benchmark run creates a separate timestamped directory:
+
 ```
 redis-testing/
-├── logs/
-│   └── benchmark_YYYYMMDD_HHMMSS.log
-├── results/
-│   ├── benchmark_results_YYYYMMDD_HHMMSS.json
-│   └── graphs/
-│       ├── throughput_by_data_size.png
-│       ├── latency_by_data_size.png
-│       ├── throughput_by_ratio.png
-│       ├── throughput_heatmap.png
-│       ├── latency_heatmap.png
-│       ├── get_set_comparison.png
-│       ├── bandwidth_analysis.png
-│       └── summary_dashboard.png
+└── results/
+    └── YYYYMMDD_HHMMSS/           ← Timestamped run directory
+        ├── benchmark_results.json  ← Results and summary
+        ├── logs/
+        │   └── benchmark_YYYYMMDD_HHMMSS.log
+        └── graphs/
+            ├── throughput_by_data_size.png
+            ├── latency_by_data_size.png
+            ├── throughput_by_ratio.png
+            ├── throughput_heatmap.png
+            ├── latency_heatmap.png
+            ├── get_set_comparison.png
+            ├── bandwidth_analysis.png
+            └── summary_dashboard.png
 ```
+
+This structure makes it easy to:
+- Compare results across different runs
+- Archive historical benchmarks
+- Organize tests by date and time
 
 ### Log Files
 
-Located in `logs/` directory:
+Located in `results/YYYYMMDD_HHMMSS/logs/` directory:
 - Timestamped log file with complete operation history
 - Includes all commands executed and their outputs
 - Error messages and warnings
 
 ### Results Files
 
-Located in `results/` directory:
-- **JSON file**: Complete benchmark results with all metrics
+Located in `results/YYYYMMDD_HHMMSS/` directory:
+- **benchmark_results.json**: Complete benchmark results with all metrics
+  - Run timestamp
   - Configuration used
   - Individual test results
   - Summary statistics
 
 ### Visualization Graphs
 
-Located in `results/graphs/` directory:
+Located in `results/YYYYMMDD_HHMMSS/graphs/` directory:
 
 1. **throughput_by_data_size.png**: Line graph showing ops/sec vs data size for each ratio
 2. **latency_by_data_size.png**: Line graph showing latency vs data size for each ratio
