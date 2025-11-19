@@ -1,0 +1,7 @@
+apiVersion: app.redislabs.com/v1alpha1
+kind: RedisEnterpriseDatabase
+metadata:
+  name: redb1
+spec:
+  memorySize: 4GB
+  databasePort: 10001

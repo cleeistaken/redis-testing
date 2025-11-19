@@ -34,20 +34,20 @@ redis-testing/
 │   └── COMPLETION_SUMMARY.md       Completion status (current file)
 │
 ├── 📁 Generated Directories (created at runtime)
-│   ├── logs/                       Execution logs
-│   │   └── benchmark_YYYYMMDD_HHMMSS.log
-│   │
-│   └── results/                    Benchmark results
-│       ├── benchmark_results_YYYYMMDD_HHMMSS.json
-│       └── graphs/                 Visualizations
-│           ├── summary_dashboard.png
-│           ├── throughput_by_data_size.png
-│           ├── latency_by_data_size.png
-│           ├── throughput_by_ratio.png
-│           ├── throughput_heatmap.png
-│           ├── latency_heatmap.png
-│           ├── get_set_comparison.png
-│           └── bandwidth_analysis.png
+│   └── results/                    Benchmark results (organized by run)
+│       └── YYYYMMDD_HHMMSS/        ← Timestamped run directory
+│           ├── benchmark_results.json
+│           ├── logs/
+│           │   └── benchmark_YYYYMMDD_HHMMSS.log
+│           └── graphs/             Visualizations
+│               ├── summary_dashboard.png
+│               ├── throughput_by_data_size.png
+│               ├── latency_by_data_size.png
+│               ├── throughput_by_ratio.png
+│               ├── throughput_heatmap.png
+│               ├── latency_heatmap.png
+│               ├── get_set_comparison.png
+│               └── bandwidth_analysis.png
 │
 └── 🗑️  Temporary Files (auto-cleaned)
     └── /tmp/
@@ -161,24 +161,32 @@ Typical Workflow
 Output Files
 ============
 
-After running a benchmark, you'll find:
+After running a benchmark, you'll find a timestamped directory:
 
-logs/benchmark_YYYYMMDD_HHMMSS.log
-  - Complete execution log
-  - All commands run
-  - Error messages
-  - Progress updates
+results/YYYYMMDD_HHMMSS/
+  ├── benchmark_results.json
+  │     - Run timestamp
+  │     - Configuration used
+  │     - All test results
+  │     - Summary statistics
+  │
+  ├── logs/
+  │   └── benchmark_YYYYMMDD_HHMMSS.log
+  │         - Complete execution log
+  │         - All commands run
+  │         - Error messages
+  │         - Progress updates
+  │
+  └── graphs/
+      └── *.png (8 graphs)
+            - 300 DPI resolution
+            - Professional styling
 
-results/benchmark_results_YYYYMMDD_HHMMSS.json
-  - Configuration used
-  - All test results
-  - Summary statistics
-  - Metrics for each test
-
-results/graphs/*.png
-  - 8 visualization graphs
-  - 300 DPI resolution
-  - Professional styling
+Benefits:
+  ✓ Each run is self-contained
+  ✓ Easy to compare different runs
+  ✓ Simple archiving and cleanup
+  ✓ No file conflicts between runs
 
 
 Support Resources
