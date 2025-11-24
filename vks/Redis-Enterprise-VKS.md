@@ -7,10 +7,10 @@ kubectl create ns redis
 # Change to redis context
 kubectl config set-context --current --namespace redis
 
-# 
+# Redis Enterprise Operator install
 kubectl apply -f bundle.yaml
 
-#
+# Redis Enterprise Install
 kubectl apply -f rec.yaml
 kubectl get rec --watch
 kubectl apply -f redb1.yaml
